@@ -28,6 +28,7 @@ async function run() {
 
     const userCollection = client.db("autoMyDB").collection("users");
     const shopCollection = client.db("autoMyDB").collection("shops");
+    const productCollection = client.db("autoMyDB").collection("products");
 
     //jwt token api
     app.post("/jwt", async (req, res) => {
@@ -64,7 +65,7 @@ async function run() {
     };
 
     //user related api
-    app.get("/users", async (req, res) => {
+    app.get("/users",verifyToken, verifyAdmin, async (req, res) => {
       const result = await userCollection.find().toArray();
       res.send(result);
     });
@@ -96,7 +97,7 @@ async function run() {
       res.send(result);
     });
 
-    app.patch("/users/role/:id", async (req, res) => {
+    app.patch("/users/role/:id", verifyToken, verifyAdmin, async (req, res) => {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
       const updatedDoc = {
@@ -108,7 +109,7 @@ async function run() {
       res.send(result);
     });
 
-    app.delete("/users/:id", async (req, res) => {
+    app.delete("/users/:id", verifyToken, verifyAdmin, async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await userCollection.deleteOne(query);
@@ -126,6 +127,13 @@ async function run() {
       const result = await shopCollection.insertOne(list);
       res.send(result);
     });
+
+    //addProduct related api
+    app.post('/addProduct', verifyToken, async(req, res)=>{
+      const product = req.body;
+      const result = await productCollection.insertOne(product)
+      res.send(result);
+    })
 
 
     // Send a ping to confirm a successful connection
