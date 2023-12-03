@@ -65,7 +65,7 @@ async function run() {
     };
 
     //user related api
-    app.get("/users",verifyToken, verifyAdmin, async (req, res) => {
+    app.get("/users", verifyToken, verifyAdmin, async (req, res) => {
       const result = await userCollection.find().toArray();
       res.send(result);
     });
@@ -129,19 +129,46 @@ async function run() {
     });
 
     //addProduct related api
-    app.get('/addProduct', async(req,res) => {
-      const email = req.query.email
-      const query = {email: email}
+    app.get("/addProduct", async (req, res) => {
+      const email = req.query.email;
+      const query = { email: email };
       const result = await productCollection.find(query).toArray();
       res.send(result);
-    })
-
-    app.post('/addProduct', verifyToken, async(req, res)=>{
-      const product = req.body;
-      const result = await productCollection.insertOne(product)
+    });
+    
+    app.get('/addProduct/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) }
+      const result = await productCollection.findOne(query);
       res.send(result);
     })
 
+    app.post("/addProduct", verifyToken, async (req, res) => {
+      const product = req.body;
+      const result = await productCollection.insertOne(product);
+      res.send(result);
+    });
+
+    app.patch("/addProduct/:id", async (req, res) => {
+      const item = req.body;
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updatedDoc = {
+        $set: {
+          name: item.name,
+          quantity: parseFloat(item.quantity),
+          description: item.description,
+          location: item.location,
+          cost: parseFloat(item.cost),
+          profit: parseFloat(item.profit),
+          discount: parseFloat(item.discount),
+          image: item.image
+        },
+      };
+
+      const result = await productCollection.updateOne(filter, updatedDoc);
+      res.send(result);
+    });
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
