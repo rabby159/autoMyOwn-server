@@ -129,6 +129,13 @@ async function run() {
     });
 
     //addProduct related api
+    app.get('/addProduct', async(req,res) => {
+      const email = req.query.email
+      const query = {email: email}
+      const result = await productCollection.find(query).toArray();
+      res.send(result);
+    })
+
     app.post('/addProduct', verifyToken, async(req, res)=>{
       const product = req.body;
       const result = await productCollection.insertOne(product)
